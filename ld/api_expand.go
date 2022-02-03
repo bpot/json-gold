@@ -297,7 +297,8 @@ func (api *JsonLdApi) Expand(activeCtx *Context, activeProperty string, element 
 			if resultMap != nil && (len(resultMap) == 0 || hasValue || hasList) {
 				resultMap = nil
 			} else if resultMap != nil && !frameExpansion && hasID && len(resultMap) == 1 { // 12.2)
-				resultMap = nil
+				// [bpot] allow node with only @id
+				//resultMap = nil
 			}
 		}
 		// 13)
