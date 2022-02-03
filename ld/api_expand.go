@@ -406,7 +406,16 @@ func (api *JsonLdApi) expandObject(activeCtx *Context, activeProperty string, ex
 						return NewJsonLdError(InvalidIDValue, "value of @id must be a string, an array of strings or an empty dictionary")
 					}
 				} else {
-					return NewJsonLdError(InvalidIDValue, "value of @id must be a string")
+					switch value.(type) {
+					case float64:
+						valueStr := fmt.Sprintf("%d", int(value.(float64)))
+						expandedValue, err = activeCtx.ExpandIri(valueStr, true, false, nil, nil)
+						if err != nil {
+							return err
+						}
+					default:
+						return NewJsonLdError(InvalidIDValue, "value of @id must be a string")
+					}
 				}
 			} else if expandedProperty == "@included" {
 				// Included blocks are treated as an array of separate object nodes sharing the same
