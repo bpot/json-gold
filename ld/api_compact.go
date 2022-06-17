@@ -178,11 +178,23 @@ func (api *JsonLdApi) Compact(activeCtx *Context, activeProperty string, element
 				compactedValues := make([]interface{}, 0)
 
 				for _, v := range Arrayify(expandedValue) {
-					cv, err := inputCtx.CompactIri(v.(string), nil, true, false)
-					if err != nil {
-						return nil, err
+					if obj, ok := v.(map[string]interface{}); ok {
+						if v, found := obj["@preserve"]; found {
+							for _, v := range Arrayify(v) {
+								cv, err := activeCtx.CompactIri(v.(string), nil, false, false)
+								if err != nil {
+									return nil, err
+								}
+								compactedValues = append(compactedValues, cv)
+							}
+						}
+					} else {
+						cv, err := inputCtx.CompactIri(v.(string), nil, true, false)
+						if err != nil {
+							return nil, err
+						}
+						compactedValues = append(compactedValues, cv)
 					}
-					compactedValues = append(compactedValues, cv)
 				}
 
 				container := activeCtx.GetContainer(alias)

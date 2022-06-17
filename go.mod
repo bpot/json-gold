@@ -1,4 +1,4 @@
-module github.com/piprate/json-gold
+module github.com/bpot/json-gold
 
 go 1.13
 

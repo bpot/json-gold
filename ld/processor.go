@@ -16,6 +16,7 @@ package ld
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -340,6 +341,7 @@ func (jldp *JsonLdProcessor) Frame(input interface{}, frame interface{}, opts *J
 	}
 
 	// 2. Set expanded input to the result of using the expand method using input and options.
+	log.Printf("EXPAND WITH %+v", opts)
 	expandedInput, err := jldp.Expand(input, opts)
 	if err != nil {
 		return nil, err
@@ -377,6 +379,8 @@ func (jldp *JsonLdProcessor) Frame(input interface{}, frame interface{}, opts *J
 		return nil, err
 	}
 
+	log.Println("FRAMED", framed)
+	log.Println("CONTEXT", activeCtx)
 	compacted, err := api.Compact(activeCtx, "", framed, opts.CompactArrays)
 	if err != nil {
 		return nil, err

@@ -16,6 +16,7 @@ package ld
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -372,7 +373,22 @@ func (api *JsonLdApi) matchFrame(state *FramingContext, subjects []string,
 		for _, prop := range GetOrderedKeys(frame) {
 			// skip keywords
 			if IsKeyword(prop) {
-				continue
+				if prop == "@type" {
+					if typeInfo, ok := frame["@type"].([]interface{}); ok {
+						log.Println("Allowing default type", typeInfo)
+						if _, isMap := typeInfo[0].(map[string]interface{}); isMap {
+							//tODO need to check for @default here?
+							// this is okay
+						} else {
+							continue
+						}
+					} else {
+						log.Printf("Not allowing non-default type: %T", frame["@type"])
+						continue
+					}
+				} else {
+					continue
+				}
 			}
 
 			// if omit default is off, then include default values for
@@ -489,9 +505,11 @@ func validateFrame(frame interface{}) error {
 			if _, isMap := typeVal.(map[string]interface{}); isMap {
 				continue
 			}
-			if strings.HasPrefix(typeVal.(string), "_:") {
-				return NewJsonLdError(InvalidFrame,
-					fmt.Sprintf("Invalid JSON-LD frame syntax; invalid value of @type: %v", t))
+			if _, ok := typeVal.(string); ok {
+				if strings.HasPrefix(typeVal.(string), "_:") {
+					return NewJsonLdError(InvalidFrame,
+						fmt.Sprintf("Invalid JSON-LD frame syntax; invalid value of @type: %v", t))
+				}
 			}
 		}
 	}
@@ -717,7 +735,14 @@ func FilterSubject(state *FramingContext, subject map[string]interface{}, frame 
 					matchThis = true
 				} else {
 					frameType := frame["@type"].([]interface{})
-					if isEmptyObject(frameType[0]) {
+					hasDefault := false
+					_, isMap := frameType[0].(map[string]interface{})
+					if isMap {
+						_, hasDefault = frameType[0].(map[string]interface{})["@default"]
+					}
+					if hasDefault {
+						matchThis = true
+					} else if isEmptyObject(frameType[0]) {
 						matchThis = len(nodeValues) > 0
 					} else {
 						// match on a specific @type

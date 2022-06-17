@@ -465,11 +465,28 @@ func (api *JsonLdApi) expandObject(activeCtx *Context, activeProperty string, ex
 						expandedValue = append(Arrayify(resultMap[expandedProperty]), expandedValue)
 					}
 				case map[string]interface{}:
-					if len(v) != 0 {
-						return NewJsonLdError(InvalidTypeValue,
-							"@type value must be a an empty object for framing")
+					/*
+						if len(v) != 0 {
+							panic("where am i")
+							return NewJsonLdError(InvalidTypeValue,
+								"@type value must be a an empty object for framing")
+						}
+						HERE
+					*/
+					expandedValueMap := map[string]interface{}{}
+					for k, v := range v {
+						kk, err := typeScopedContext.ExpandIri(k, false, true, nil, nil)
+						if err != nil {
+							return err
+						}
+						vv, err := typeScopedContext.ExpandIri(v.(string), true, true, nil, nil)
+						if err != nil {
+							return err
+						}
+						expandedValueMap[kk] = vv
 					}
-					expandedValue = value
+					expandedValue = expandedValueMap
+					//expandedValue, _ = api.Expand(activeCtx, expandedProperty, value, opts, false, nil)
 				default:
 					return NewJsonLdError(InvalidTypeValue, v)
 				}
