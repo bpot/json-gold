@@ -16,7 +16,6 @@ package ld
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -375,7 +374,6 @@ func (api *JsonLdApi) matchFrame(state *FramingContext, subjects []string,
 			if IsKeyword(prop) {
 				if prop == "@type" {
 					if typeInfo, ok := frame["@type"].([]interface{}); ok {
-						log.Println("Allowing default type", typeInfo)
 						if _, isMap := typeInfo[0].(map[string]interface{}); isMap {
 							//tODO need to check for @default here?
 							// this is okay
@@ -383,7 +381,6 @@ func (api *JsonLdApi) matchFrame(state *FramingContext, subjects []string,
 							continue
 						}
 					} else {
-						log.Printf("Not allowing non-default type: %T", frame["@type"])
 						continue
 					}
 				} else {
